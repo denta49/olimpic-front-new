@@ -9,10 +9,10 @@ const configs: Record<string, Config> = {
     API_URL: "http://localhost:8000/api",
   },
   staging: {
-    API_URL: "https://dev-api.olimpiadafilozoficzna.edu.pl/api",
+    API_URL: "",
   },
   production: {
-    API_URL: "https://api2.olimpiadafilozoficzna.edu.pl/api",
+    API_URL: "",
   },
 };
 
