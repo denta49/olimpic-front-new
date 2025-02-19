@@ -6,7 +6,7 @@ interface Config {
 
 const configs: Record<string, Config> = {
   development: {
-    API_URL: "http://localhost:8000/api",
+    API_URL: "https://localhost:8001/api",
   },
   staging: {
     API_URL: "",

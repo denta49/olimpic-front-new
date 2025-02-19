@@ -1,34 +1,28 @@
-import { Route, Routes } from "react-router-dom";
-import MainLayout from "./layouts/MainLayout";
-import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
-import StudentPage from "./pages/StudentPage";
-import CoordinatorPage from "./pages/CoordinatorPage";
-import AdminPage from "./pages/AdminPage";
-import RequireAuth from "./components/RequireAuth";
-import ResetPasswordPage from "./pages/ResetPasswordPage";
-import NewPasswordPage from "./pages/NewPasswordPage";
+import { Routes, Route } from "react-router-dom";
+import LoginPage from "@/pages/LoginPage";
+import StudentPage from "@/pages/StudentPage";
+import AdminPanel from "@/pages/AdminPanel";
+import UnauthorizedPage from "@/pages/UnauthorizedPage";
+import ResetPasswordPage from "@/pages/ResetPasswordPage";
+import NewPasswordPage from "@/pages/NewPasswordPage";
+import RegisterPage from "@/pages/RegisterPage";
+import { RequireAuth } from "@/components/RequireAuth";
 
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<MainLayout />}>
-        <Route path="/" element={<LoginPage />} />
-        <Route path="register" element={<RegisterPage />} />
-        <Route path="reset-password" element={<ResetPasswordPage />} />
-        <Route path="new-password" element={<NewPasswordPage />} />
+      <Route path="/" element={<LoginPage />} />
+      <Route path="/unauthorized" element={<UnauthorizedPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
+      <Route path="/new-password" element={<NewPasswordPage />} />
+      <Route path="/register" element={<RegisterPage />} />
 
-        <Route element={<RequireAuth allowedRole="student" />}>
-          <Route path="student" element={<StudentPage />} />
-        </Route>
+      <Route element={<RequireAuth allowedRole="student" />}>
+        <Route path="/student" element={<StudentPage />} />
+      </Route>
 
-        <Route element={<RequireAuth allowedRole="coordinator" />}>
-          <Route path="coordinator" element={<CoordinatorPage />} />
-        </Route>
-
-        <Route element={<RequireAuth allowedRole="admin" />}>
-          <Route path="admin" element={<AdminPage />} />
-        </Route>
+      <Route element={<RequireAuth allowedRole={["admin", "coordinator"]} />}>
+        <Route path="/admin" element={<AdminPanel />} />
       </Route>
     </Routes>
   );
