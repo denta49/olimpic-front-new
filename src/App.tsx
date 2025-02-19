@@ -6,7 +6,7 @@ import UnauthorizedPage from "@/pages/UnauthorizedPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import NewPasswordPage from "@/pages/NewPasswordPage";
 import RegisterPage from "@/pages/RegisterPage";
-import { RequireAuth } from "@/components/RequireAuth";
+import { RequireAuth } from "@/context/auth/RequireAuth";
 
 function App() {
   return (
