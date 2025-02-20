@@ -35,12 +35,6 @@ export default function AdminPanel() {
           {/* Add coordinator-specific components/features here */}
         </div>
       )}
-
-      {/* Shared content for both roles */}
-      <div className="mt-8">
-        <h2 className="text-xl font-semibold mb-4">Wspólne funkcje</h2>
-        {/* Add components/features available to both roles */}
-      </div>
     </div>
   );
 }

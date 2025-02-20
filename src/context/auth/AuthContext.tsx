@@ -146,7 +146,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     getCurrentUser();
-  }, []);
+  }, [getCurrentUser]);
 
   return (
     <AuthContext.Provider value={{ state, login, logout, getCurrentUser }}>

@@ -10,7 +10,7 @@ export function LogoutButton() {
 
   const handleLogout = async () => {
     try {
-      await api.post("/logout");
+      await api.post("/logout", {}, { credentials: "include" });
       logout();
       navigate("/");
     } catch (error) {
