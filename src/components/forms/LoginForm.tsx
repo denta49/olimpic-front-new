@@ -36,7 +36,11 @@ export function LoginForm() {
           className="h-9 text-sm"
           disabled={isAuthenticating}
         />
-        <Button className="w-full" type="submit" disabled={isAuthenticating}>
+        <Button
+          className="w-full bg-neutral-950 text-neutral-50"
+          type="submit"
+          disabled={isAuthenticating}
+        >
           {isAuthenticating ? "Logowanie..." : "Zaloguj się"}
         </Button>
       </div>
@@ -45,7 +49,7 @@ export function LoginForm() {
       <div className="flex flex-col space-y-2">
         <Button
           variant="secondary"
-          className="w-full"
+          className="w-full bg-neutral-950 text-neutral-50"
           type="button"
           onClick={() => navigate("/register")}
           disabled={isAuthenticating}
@@ -54,7 +58,7 @@ export function LoginForm() {
         </Button>
         <Button
           variant="secondary"
-          className="w-full"
+          className="w-full bg-neutral-950 text-neutral-50"
           type="button"
           onClick={() => navigate("/reset-password")}
           disabled={isAuthenticating}
