@@ -2,9 +2,9 @@ import { useAuth } from "@/context/auth/AuthContext";
 import { AuthenticatedLayout } from "@/components/layouts/AuthenticatedLayout";
 
 export default function AdminPanel() {
-  const { state } = useAuth();
-  const isAdmin = state.user?.type === "admin";
-  const isCoordinator = state.user?.type === "coordinator";
+  const { user } = useAuth();
+  const isAdmin = user?.type === "admin";
+  const isCoordinator = user?.type === "coordinator";
 
   if (!isAdmin && !isCoordinator) {
     return null;
@@ -14,7 +14,7 @@ export default function AdminPanel() {
     <AuthenticatedLayout
       title={`Panel ${isAdmin ? "Administratora" : "Koordynatora"}`}
     >
-      <p>Zalogowano jako: {state.user?.email}</p>
+      <p>Zalogowano jako: {user?.email}</p>
 
       {/* Admin-specific content */}
       {isAdmin && (

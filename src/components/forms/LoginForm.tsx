@@ -6,22 +6,13 @@ import { useAuth } from "@/context/auth/AuthContext";
 
 export function LoginForm() {
   const navigate = useNavigate();
-  const { state, login } = useAuth();
+  const { login, error, isAuthenticating } = useAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    const userData = await login(username, password);
-
-    if (userData) {
-      if (userData.type === "student") {
-        navigate("/student");
-      } else if (userData.type === "coordinator" || userData.type === "admin") {
-        navigate("/admin");
-      }
-    }
+    await login({ username, password });
   };
 
   return (
@@ -34,7 +25,7 @@ export function LoginForm() {
           onChange={(e) => setUsername(e.target.value)}
           required
           className="h-9 text-sm"
-          disabled={state.isAuthenticating}
+          disabled={isAuthenticating}
         />
         <Input
           type="password"
@@ -43,19 +34,13 @@ export function LoginForm() {
           onChange={(e) => setPassword(e.target.value)}
           required
           className="h-9 text-sm"
-          disabled={state.isAuthenticating}
+          disabled={isAuthenticating}
         />
-        <Button
-          className="w-full"
-          type="submit"
-          disabled={state.isAuthenticating}
-        >
-          {state.isAuthenticating ? "Logowanie..." : "Zaloguj się"}
+        <Button className="w-full" type="submit" disabled={isAuthenticating}>
+          {isAuthenticating ? "Logowanie..." : "Zaloguj się"}
         </Button>
       </div>
-      {state.error && (
-        <div className="text-sm text-red-500 text-center">{state.error}</div>
-      )}
+      {error && <div className="text-sm text-red-500 text-center">{error}</div>}
 
       <div className="flex flex-col space-y-2">
         <Button
@@ -63,7 +48,7 @@ export function LoginForm() {
           className="w-full"
           type="button"
           onClick={() => navigate("/register")}
-          disabled={state.isAuthenticating}
+          disabled={isAuthenticating}
         >
           Zarejestruj się
         </Button>
@@ -72,7 +57,7 @@ export function LoginForm() {
           className="w-full"
           type="button"
           onClick={() => navigate("/reset-password")}
-          disabled={state.isAuthenticating}
+          disabled={isAuthenticating}
         >
           Zapomniałem hasła
         </Button>

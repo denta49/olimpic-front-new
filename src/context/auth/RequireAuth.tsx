@@ -1,25 +1,27 @@
-import { Navigate, Outlet, useLocation } from "react-router-dom";
-import { useAuth } from "@/context/auth/AuthContext";
+import { Navigate, Outlet } from "react-router-dom";
+import { useAuth } from "./AuthContext";
+
+type AllowedRole = "admin" | "coordinator" | "student";
 
 interface RequireAuthProps {
-  allowedRole: string | string[];
+  allowedRole: AllowedRole | AllowedRole[];
 }
 
 export function RequireAuth({ allowedRole }: RequireAuthProps) {
-  const { state } = useAuth();
-  const location = useLocation();
+  const { user, isLoading } = useAuth();
 
-  if (state.isLoading) {
-    return <div>Loading...</div>;
+  if (isLoading) {
+    return <div>Loading...</div>; // Consider creating a proper loading component
   }
 
-  if (!state.isAuthenticated) {
-    return <Navigate to="/" state={{ from: location }} replace />;
+  if (!user) {
+    return <Navigate to="/" replace />;
   }
 
-  const allowedRoles = Array.isArray(allowedRole) ? allowedRole : [allowedRole];
-  if (!allowedRoles.includes(state.user?.type || "")) {
-    return <Navigate to="/unauthorized" state={{ from: location }} replace />;
+  const roles = Array.isArray(allowedRole) ? allowedRole : [allowedRole];
+
+  if (!roles.includes(user.type as AllowedRole)) {
+    return <Navigate to="/unauthorized" replace />;
   }
 
   return <Outlet />;

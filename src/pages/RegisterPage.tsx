@@ -1,53 +1,41 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useApi } from "@/hooks/useApi";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { AuthLayout } from "@/components/layouts/AuthLayout";
+import { useMutation } from "@tanstack/react-query";
+import { authApi } from "@/api/auth";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
-  const api = useApi();
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
     confirmPassword: "",
   });
 
+  const registerMutation = useMutation({
+    mutationFn: authApi.register,
+    onSuccess: (response) => {
+      if (response.error) {
+        throw new Error(response.error);
+      }
+      navigate("/");
+    },
+  });
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
 
     if (formData.password !== formData.confirmPassword) {
-      setError("Hasła nie są identyczne");
+      registerMutation.error = new Error("Hasła nie są identyczne");
       return;
     }
 
-    setIsLoading(true);
-
-    try {
-      const { error } = await api.post("/register", {
-        email: formData.email,
-        password: formData.password,
-      });
-
-      if (error) {
-        setError(error);
-        return;
-      }
-
-      navigate("/");
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Wystąpił błąd podczas rejestracji",
-      );
-    } finally {
-      setIsLoading(false);
-    }
+    await registerMutation.mutateAsync({
+      email: formData.email,
+      password: formData.password,
+    });
   };
 
   return (
@@ -66,6 +54,7 @@ export default function RegisterPage() {
             }
             required
             className="h-9 text-sm"
+            disabled={registerMutation.isPending}
           />
           <Input
             type="password"
@@ -76,6 +65,7 @@ export default function RegisterPage() {
             }
             required
             className="h-9 text-sm"
+            disabled={registerMutation.isPending}
           />
           <Input
             type="password"
@@ -86,19 +76,27 @@ export default function RegisterPage() {
             }
             required
             className="h-9 text-sm"
+            disabled={registerMutation.isPending}
           />
         </div>
-        {error && (
-          <div className="text-sm text-red-500 text-center">{error}</div>
+        {registerMutation.error && (
+          <div className="text-sm text-red-500 text-center">
+            {registerMutation.error.message}
+          </div>
         )}
-        <Button className="w-full" type="submit" disabled={isLoading}>
-          {isLoading ? "Rejestracja..." : "Zarejestruj się"}
+        <Button
+          className="w-full"
+          type="submit"
+          disabled={registerMutation.isPending}
+        >
+          {registerMutation.isPending ? "Rejestracja..." : "Zarejestruj się"}
         </Button>
         <Button
           variant="secondary"
           className="w-full"
           type="button"
           onClick={() => navigate("/")}
+          disabled={registerMutation.isPending}
         >
           Powrót do logowania
         </Button>

@@ -1,181 +1,91 @@
-import {
-  createContext,
-  useContext,
-  useReducer,
-  useEffect,
-  ReactNode,
-} from "react";
-import { useApi } from "@/hooks/useApi";
-
-interface User {
-  email: string;
-  type: string;
-  roles: string[];
-}
-
-interface AuthState {
-  user: User | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  isAuthenticating: boolean;
-  error: string | null;
-}
-
-type AuthAction =
-  | { type: "AUTH_START" }
-  | { type: "AUTH_SUCCESS"; payload: User }
-  | { type: "AUTH_FAIL"; payload: string }
-  | { type: "LOGOUT" }
-  | { type: "AUTH_LOADING_START" }
-  | { type: "AUTH_LOADING_END" };
-
-const initialState: AuthState = {
-  user: null,
-  isAuthenticated: false,
-  isLoading: false,
-  isAuthenticating: false,
-  error: null,
-};
-
-function authReducer(state: AuthState, action: AuthAction): AuthState {
-  switch (action.type) {
-    case "AUTH_START":
-      return {
-        ...state,
-        isAuthenticating: true,
-      };
-    case "AUTH_SUCCESS":
-      return {
-        ...state,
-        isAuthenticated: true,
-        user: action.payload,
-        isAuthenticating: false,
-        error: null,
-      };
-    case "AUTH_FAIL":
-      return {
-        ...state,
-        user: null,
-        isAuthenticated: false,
-        isAuthenticating: false,
-        error: action.payload,
-      };
-    case "LOGOUT":
-      return {
-        ...state,
-        user: null,
-        isAuthenticated: false,
-        isAuthenticating: false,
-        error: null,
-      };
-    case "AUTH_LOADING_START":
-      return {
-        ...state,
-        isLoading: true,
-      };
-    case "AUTH_LOADING_END":
-      return {
-        ...state,
-        isLoading: false,
-      };
-    default:
-      return state;
-  }
-}
+import { createContext, useContext, useCallback, ReactNode } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { authApi, User, LoginCredentials } from "@/api/auth";
+import { useNavigate } from "react-router-dom";
 
 interface AuthContextType {
-  state: AuthState;
-  login: (username: string, password: string) => Promise<User | null>;
-  logout: () => void;
-  getCurrentUser: () => Promise<User | null>;
+  user: User | null;
+  isLoading: boolean;
+  error: string | null;
+  login: (credentials: LoginCredentials) => Promise<void>;
+  logout: () => Promise<void>;
+  isAuthenticating: boolean;
+  isLoggingOut: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(authReducer, initialState);
-  const api = useApi();
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
-  const getCurrentUser = async () => {
-    try {
-      const { data, error } = await api.get("/current-user");
+  const { data: user, isLoading } = useQuery({
+    queryKey: ["user"],
+    queryFn: async () => {
+      const { data, error } = await authApi.getCurrentUser();
+      if (error) throw new Error(error);
+      return data;
+    },
+    retry: false,
+  });
 
-      if (error) {
-        return null;
+  const loginMutation = useMutation({
+    mutationFn: authApi.login,
+    onSuccess: async (response) => {
+      if (response.error) {
+        throw new Error(response.error);
       }
 
-      return {
-        email: data.email,
-        type: data.type,
-        roles: data.roles,
-      };
-    } catch (error) {
-      console.error("Error fetching current user:", error);
-      return null;
-    }
-  };
+      // After successful login, invalidate and refetch user data
+      await queryClient.invalidateQueries({ queryKey: ["user"] });
+      const userData = await authApi.getCurrentUser();
 
-  const login = async (username: string, password: string) => {
-    dispatch({ type: "AUTH_START" });
-
-    try {
-      const { error } = await api.post("/login", { username, password });
-
-      if (error) {
-        dispatch({
-          type: "AUTH_FAIL",
-          payload:
-            typeof error === "string"
-              ? error
-              : "Nieprawidłowa nazwa użytkownika lub hasło",
-        });
-        return null;
+      if (userData.error || !userData.data) {
+        throw new Error(
+          userData.error || "Nie udało się pobrać danych użytkownika",
+        );
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      const userData = await getCurrentUser();
-
-      if (!userData) {
-        dispatch({
-          type: "AUTH_FAIL",
-          payload: "Nie udało się pobrać danych użytkownika",
-        });
-        return null;
+      // Navigate based on user type
+      if (userData.data.type === "student") {
+        navigate("/student");
+      } else if (["admin", "coordinator"].includes(userData.data.type)) {
+        navigate("/admin");
       }
+    },
+  });
 
-      dispatch({
-        type: "AUTH_SUCCESS",
-        payload: userData,
-      });
+  const logoutMutation = useMutation({
+    mutationFn: authApi.logout,
+    onSuccess: () => {
+      queryClient.setQueryData(["user"], null);
+      navigate("/");
+    },
+  });
 
-      return userData;
-    } catch (error) {
-      dispatch({
-        type: "AUTH_FAIL",
-        payload: error instanceof Error ? error.message : "Błąd logowania",
-      });
-      return null;
-    }
-  };
+  const login = useCallback(
+    async (credentials: LoginCredentials) => {
+      await loginMutation.mutateAsync(credentials);
+    },
+    [loginMutation],
+  );
 
-  const logout = async () => {
-    dispatch({ type: "AUTH_LOADING_START" });
-    try {
-      await api.post("/logout", {});
-      dispatch({ type: "LOGOUT" });
-    } catch (error) {
-      console.error("Logout failed:", error);
-    } finally {
-      dispatch({ type: "AUTH_LOADING_END" });
-    }
-  };
-
-  useEffect(() => {
-    getCurrentUser();
-  }, [getCurrentUser]);
+  const logout = useCallback(async () => {
+    await logoutMutation.mutateAsync();
+  }, [logoutMutation]);
 
   return (
-    <AuthContext.Provider value={{ state, login, logout, getCurrentUser }}>
+    <AuthContext.Provider
+      value={{
+        user: user || null,
+        isLoading,
+        error: loginMutation.error?.message || null,
+        login,
+        logout,
+        isAuthenticating: loginMutation.isPending,
+        isLoggingOut: logoutMutation.isPending,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
