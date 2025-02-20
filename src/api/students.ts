@@ -80,10 +80,20 @@ interface ApiResponse<T> {
 }
 
 export const studentsApi = {
-  getStudents: async (): Promise<ApiResponse<Student[]>> => {
+  getStudents: async (
+    searchQuery?: string,
+  ): Promise<ApiResponse<Student[]>> => {
     try {
-      const response = await fetch(`${config.API_URL}/students`, {
+      const url = `${config.API_URL}/students${
+        searchQuery ? `?search=${encodeURIComponent(searchQuery)}` : ""
+      }`;
+
+      const response = await fetch(url, {
+        method: "GET",
         credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
 
       if (!response.ok) {
@@ -92,7 +102,6 @@ export const studentsApi = {
       }
 
       const data = await response.json();
-      // Check if data is in "hydra:member" format
       const students = data["hydra:member"] || data;
       return { data: students };
     } catch (error) {
