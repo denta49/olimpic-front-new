@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useApi } from "@/hooks/useApi";
+import { AuthLayout } from "@/components/layouts/AuthLayout";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -50,60 +51,58 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-950">
-      <div className="w-full max-w-sm p-6 bg-white rounded-lg shadow-sm">
-        <h1 className="text-lg font-semibold text-gray-900 text-center mb-4">
-          Rejestracja
-        </h1>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-3">
-            <Input
-              type="email"
-              placeholder="Adres email"
-              value={formData.email}
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
-              required
-              className="h-9 text-sm"
-            />
-            <Input
-              type="password"
-              placeholder="Hasło"
-              value={formData.password}
-              onChange={(e) =>
-                setFormData({ ...formData, password: e.target.value })
-              }
-              required
-              className="h-9 text-sm"
-            />
-            <Input
-              type="password"
-              placeholder="Potwierdź hasło"
-              value={formData.confirmPassword}
-              onChange={(e) =>
-                setFormData({ ...formData, confirmPassword: e.target.value })
-              }
-              required
-              className="h-9 text-sm"
-            />
-          </div>
-          {error && (
-            <div className="text-sm text-red-500 text-center">{error}</div>
-          )}
-          <Button className="w-full" type="submit" disabled={isLoading}>
-            {isLoading ? "Rejestracja..." : "Zarejestruj się"}
-          </Button>
-          <Button
-            variant="secondary"
-            className="w-full"
-            type="button"
-            onClick={() => navigate("/")}
-          >
-            Powrót do logowania
-          </Button>
-        </form>
-      </div>
-    </div>
+    <AuthLayout>
+      <h1 className="text-lg font-semibold text-gray-900 text-center mb-4">
+        Rejestracja
+      </h1>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-3">
+          <Input
+            type="email"
+            placeholder="Adres email"
+            value={formData.email}
+            onChange={(e) =>
+              setFormData({ ...formData, email: e.target.value })
+            }
+            required
+            className="h-9 text-sm"
+          />
+          <Input
+            type="password"
+            placeholder="Hasło"
+            value={formData.password}
+            onChange={(e) =>
+              setFormData({ ...formData, password: e.target.value })
+            }
+            required
+            className="h-9 text-sm"
+          />
+          <Input
+            type="password"
+            placeholder="Potwierdź hasło"
+            value={formData.confirmPassword}
+            onChange={(e) =>
+              setFormData({ ...formData, confirmPassword: e.target.value })
+            }
+            required
+            className="h-9 text-sm"
+          />
+        </div>
+        {error && (
+          <div className="text-sm text-red-500 text-center">{error}</div>
+        )}
+        <Button className="w-full" type="submit" disabled={isLoading}>
+          {isLoading ? "Rejestracja..." : "Zarejestruj się"}
+        </Button>
+        <Button
+          variant="secondary"
+          className="w-full"
+          type="button"
+          onClick={() => navigate("/")}
+        >
+          Powrót do logowania
+        </Button>
+      </form>
+    </AuthLayout>
   );
 }

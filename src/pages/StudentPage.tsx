@@ -1,16 +1,17 @@
 import { useAuth } from "@/context/auth/AuthContext";
-import { LogoutButton } from "@/components/LogoutButton";
+import { AuthenticatedLayout } from "@/components/layouts/AuthenticatedLayout";
 
 export default function StudentPage() {
   const { state } = useAuth();
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold">Panel Studenta</h1>
-        <LogoutButton />
-      </div>
+    <AuthenticatedLayout title="Panel Studenta">
       <p>Zalogowano jako: {state.user?.email}</p>
-    </div>
+
+      <div className="mt-8">
+        <h2 className="text-xl font-semibold mb-4">Twoje olimpiady</h2>
+        {/* Add student-specific components/features here */}
+      </div>
+    </AuthenticatedLayout>
   );
 }

@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { config } from "@/config";
+import { AuthLayout } from "@/components/layouts/AuthLayout";
 
 export default function NewPasswordPage() {
   const navigate = useNavigate();
@@ -54,50 +55,45 @@ export default function NewPasswordPage() {
 
   if (!token) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md text-center">
-          <h2 className="text-2xl font-bold mb-4">Nieprawidłowy token</h2>
-          <p className="text-gray-600">
-            Link do resetowania hasła jest nieprawidłowy lub wygasł.
-          </p>
-        </div>
-      </div>
+      <AuthLayout>
+        <h2 className="text-lg font-semibold text-gray-900 text-center mb-4">
+          Link do resetowania hasła jest nieprawidłowy lub wygasł.
+        </h2>
+      </AuthLayout>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
-        <h1 className="text-2xl font-bold text-center mb-6">
-          Ustaw nowe hasło
-        </h1>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Input
-              type="password"
-              placeholder="Nowe hasło"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Input
-              type="password"
-              placeholder="Potwierdź hasło"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-            />
-          </div>
-          {error && (
-            <div className="text-sm text-red-500 text-center">{error}</div>
-          )}
-          <Button className="w-full" type="submit" disabled={isLoading}>
-            {isLoading ? "Zapisywanie..." : "Zapisz nowe hasło"}
-          </Button>
-        </form>
-      </div>
-    </div>
+    <AuthLayout>
+      <h1 className="text-lg font-semibold text-gray-900 text-center mb-4">
+        Ustaw nowe hasło
+      </h1>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-2">
+          <Input
+            type="password"
+            placeholder="Nowe hasło"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
+        <div className="space-y-2">
+          <Input
+            type="password"
+            placeholder="Potwierdź hasło"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+          />
+        </div>
+        {error && (
+          <div className="text-sm text-red-500 text-center">{error}</div>
+        )}
+        <Button className="w-full" type="submit" disabled={isLoading}>
+          {isLoading ? "Zapisywanie..." : "Zapisz nowe hasło"}
+        </Button>
+      </form>
+    </AuthLayout>
   );
 }
