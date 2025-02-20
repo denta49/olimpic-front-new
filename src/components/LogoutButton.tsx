@@ -1,26 +1,12 @@
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/auth/AuthContext";
-import { useApi } from "@/hooks/useApi";
 
 export function LogoutButton() {
-  const navigate = useNavigate();
-  const { logout } = useAuth();
-  const api = useApi();
-
-  const handleLogout = async () => {
-    try {
-      await api.post("/logout", {}, { credentials: "include" });
-      logout();
-      navigate("/");
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
-  };
+  const { state, logout } = useAuth();
 
   return (
-    <Button variant="outline" onClick={handleLogout}>
-      Wyloguj się
+    <Button variant="outline" onClick={logout} disabled={state.isLoading}>
+      {state.isLoading ? "Wylogowywanie..." : "Wyloguj się"}
     </Button>
   );
 }

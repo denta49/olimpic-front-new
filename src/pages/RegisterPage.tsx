@@ -50,13 +50,13 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center bg-gray-950">
       <div className="w-full max-w-sm p-6 bg-white rounded-lg shadow-sm">
         <h1 className="text-lg font-semibold text-gray-900 text-center mb-4">
           Rejestracja
         </h1>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
+          <div className="space-y-3">
             <Input
               type="email"
               placeholder="Adres email"
@@ -65,9 +65,8 @@ export default function RegisterPage() {
                 setFormData({ ...formData, email: e.target.value })
               }
               required
+              className="h-9 text-sm"
             />
-          </div>
-          <div className="space-y-2">
             <Input
               type="password"
               placeholder="Hasło"
@@ -76,9 +75,8 @@ export default function RegisterPage() {
                 setFormData({ ...formData, password: e.target.value })
               }
               required
+              className="h-9 text-sm"
             />
-          </div>
-          <div className="space-y-2">
             <Input
               type="password"
               placeholder="Potwierdź hasło"
@@ -87,6 +85,7 @@ export default function RegisterPage() {
                 setFormData({ ...formData, confirmPassword: e.target.value })
               }
               required
+              className="h-9 text-sm"
             />
           </div>
           {error && (
@@ -96,6 +95,7 @@ export default function RegisterPage() {
             {isLoading ? "Rejestracja..." : "Zarejestruj się"}
           </Button>
           <Button
+            variant="secondary"
             className="w-full"
             type="button"
             onClick={() => navigate("/")}

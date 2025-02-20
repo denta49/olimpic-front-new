@@ -17,6 +17,7 @@ interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isAuthenticating: boolean;
   error: string | null;
 }
 
@@ -24,12 +25,15 @@ type AuthAction =
   | { type: "AUTH_START" }
   | { type: "AUTH_SUCCESS"; payload: User }
   | { type: "AUTH_FAIL"; payload: string }
-  | { type: "LOGOUT" };
+  | { type: "LOGOUT" }
+  | { type: "AUTH_LOADING_START" }
+  | { type: "AUTH_LOADING_END" };
 
 const initialState: AuthState = {
   user: null,
   isAuthenticated: false,
   isLoading: false,
+  isAuthenticating: false,
   error: null,
 };
 
@@ -38,15 +42,14 @@ function authReducer(state: AuthState, action: AuthAction): AuthState {
     case "AUTH_START":
       return {
         ...state,
-        isLoading: true,
-        error: null,
+        isAuthenticating: true,
       };
     case "AUTH_SUCCESS":
       return {
         ...state,
         isAuthenticated: true,
         user: action.payload,
-        isLoading: false,
+        isAuthenticating: false,
         error: null,
       };
     case "AUTH_FAIL":
@@ -54,7 +57,7 @@ function authReducer(state: AuthState, action: AuthAction): AuthState {
         ...state,
         user: null,
         isAuthenticated: false,
-        isLoading: false,
+        isAuthenticating: false,
         error: action.payload,
       };
     case "LOGOUT":
@@ -62,8 +65,18 @@ function authReducer(state: AuthState, action: AuthAction): AuthState {
         ...state,
         user: null,
         isAuthenticated: false,
-        isLoading: false,
+        isAuthenticating: false,
         error: null,
+      };
+    case "AUTH_LOADING_START":
+      return {
+        ...state,
+        isLoading: true,
+      };
+    case "AUTH_LOADING_END":
+      return {
+        ...state,
+        isLoading: false,
       };
     default:
       return state;
@@ -88,25 +101,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { data, error } = await api.get("/current-user");
 
       if (error) {
-        dispatch({ type: "LOGOUT" });
         return null;
       }
 
-      const userData = {
+      return {
         email: data.email,
         type: data.type,
         roles: data.roles,
       };
-
-      dispatch({
-        type: "AUTH_SUCCESS",
-        payload: userData,
-      });
-
-      return userData;
     } catch (error) {
       console.error("Error fetching current user:", error);
-      dispatch({ type: "LOGOUT" });
       return null;
     }
   };
@@ -130,6 +134,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       await new Promise((resolve) => setTimeout(resolve, 100));
       const userData = await getCurrentUser();
+
+      if (!userData) {
+        dispatch({
+          type: "AUTH_FAIL",
+          payload: "Nie udało się pobrać danych użytkownika",
+        });
+        return null;
+      }
+
+      dispatch({
+        type: "AUTH_SUCCESS",
+        payload: userData,
+      });
+
       return userData;
     } catch (error) {
       dispatch({
@@ -140,8 +158,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const logout = () => {
-    dispatch({ type: "LOGOUT" });
+  const logout = async () => {
+    dispatch({ type: "AUTH_LOADING_START" });
+    try {
+      await api.post("/logout", {});
+      dispatch({ type: "LOGOUT" });
+    } catch (error) {
+      console.error("Logout failed:", error);
+    } finally {
+      dispatch({ type: "AUTH_LOADING_END" });
+    }
   };
 
   useEffect(() => {

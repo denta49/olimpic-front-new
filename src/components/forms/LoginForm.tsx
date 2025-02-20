@@ -13,27 +13,20 @@ export function LoginForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    try {
-      const userData = await login(username, password);
+    const userData = await login(username, password);
 
-      if (userData) {
-        if (userData.type === "student") {
-          navigate("/student");
-        } else if (
-          userData.type === "coordinator" ||
-          userData.type === "admin"
-        ) {
-          navigate("/admin");
-        }
+    if (userData) {
+      if (userData.type === "student") {
+        navigate("/student");
+      } else if (userData.type === "coordinator" || userData.type === "admin") {
+        navigate("/admin");
       }
-    } catch (err) {
-      console.error("Login error:", err);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-3">
+    <form onSubmit={handleSubmit} className="space-y-8">
+      <div className="space-y-2">
         <Input
           type="text"
           placeholder="Nazwa użytkownika"
@@ -41,6 +34,7 @@ export function LoginForm() {
           onChange={(e) => setUsername(e.target.value)}
           required
           className="h-9 text-sm"
+          disabled={state.isAuthenticating}
         />
         <Input
           type="password"
@@ -49,30 +43,38 @@ export function LoginForm() {
           onChange={(e) => setPassword(e.target.value)}
           required
           className="h-9 text-sm"
+          disabled={state.isAuthenticating}
         />
+        <Button
+          className="w-full"
+          type="submit"
+          disabled={state.isAuthenticating}
+        >
+          {state.isAuthenticating ? "Logowanie..." : "Zaloguj się"}
+        </Button>
       </div>
       {state.error && (
         <div className="text-sm text-red-500 text-center">{state.error}</div>
       )}
-      <Button className="w-full" type="submit" disabled={state.isLoading}>
-        {state.isLoading ? "Logowanie..." : "Zaloguj się"}
-      </Button>
+
       <div className="flex flex-col space-y-2">
         <Button
           variant="secondary"
           className="w-full"
           type="button"
-          onClick={() => navigate("/reset-password")}
+          onClick={() => navigate("/register")}
+          disabled={state.isAuthenticating}
         >
-          Zapomniałem hasła
+          Zarejestruj się
         </Button>
         <Button
           variant="secondary"
           className="w-full"
           type="button"
-          onClick={() => navigate("/register")}
+          onClick={() => navigate("/reset-password")}
+          disabled={state.isAuthenticating}
         >
-          Zarejestruj się
+          Zapomniałem hasła
         </Button>
       </div>
     </form>
