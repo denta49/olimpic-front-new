@@ -81,32 +81,41 @@ interface ApiResponse<T> {
 
 export const studentsApi = {
   getStudents: async (
-    searchQuery?: string,
+    search: string,
+    districtId?: string,
   ): Promise<ApiResponse<Student[]>> => {
     try {
-      const url = `${config.API_URL}/students${
-        searchQuery ? `?search=${encodeURIComponent(searchQuery)}` : ""
-      }`;
+      const searchParams = new URLSearchParams();
 
-      const response = await fetch(url, {
-        method: "GET",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
+      if (search) {
+        searchParams.append("firstName", search);
+        searchParams.append("lastName", search);
+        searchParams.append("school.name", search);
+      }
+
+      if (districtId && districtId !== "all") {
+        searchParams.append("district.id", districtId);
+      }
+
+      const response = await fetch(
+        `${config.API_URL}/students?${searchParams.toString()}`,
+        {
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
         },
-      });
+      );
 
       if (!response.ok) {
-        const error = await response.json();
-        return { error: error.message || "Nie udało się pobrać listy uczniów" };
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
-      const students = data["hydra:member"] || data;
-      return { data: students };
+      return { data: data["hydra:member"] };
     } catch (error) {
       console.error("Błąd pobierania uczniów:", error);
-      return { error: "Wystąpił błąd podczas pobierania listy uczniów" };
+      return { error: "Nie udało się pobrać listy uczniów" };
     }
   },
 };
